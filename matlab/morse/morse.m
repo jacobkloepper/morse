@@ -10,8 +10,9 @@ f = fs/2*linspace(0,1,NFFT/2+1);
 nyquist = fs/2;
 % cw.wav: 1500
 % Cw_morse.mp3: 800
-band_lo = 700;
-band_hi = 900;
+peak_w = get_cw_freq(X);
+band_lo = peak_w-100;
+band_hi = peak_w+100;
 
 band = [band_lo/nyquist band_hi/nyquist];
 [b, a] = butter(5, band);
