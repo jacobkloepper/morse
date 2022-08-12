@@ -5,7 +5,7 @@
 %
 %
 
-function [T1, T3] = get_time_unit(y,fs)
+function [T1, T3, T] = get_time_unit(y,fs)
     % retval
     T = [];
 
@@ -13,6 +13,7 @@ function [T1, T3] = get_time_unit(y,fs)
     y_nonzero = find(y);
     
     % Get  sample of first valid pulse
+    prev_samp = 1;
     curr_samp = 1;
     curr_samp = next_pulse(y_nonzero, curr_samp);
 
@@ -26,19 +27,20 @@ function [T1, T3] = get_time_unit(y,fs)
 
     while (curr_samp ~= 0)
         T_init = y_nonzero(curr_samp)-next_rise;
-        fprintf("%6d ----- %6d\t|\t(T=%6d)\n", next_rise, y_nonzero(curr_samp), T_init)
+        %fprintf("%6d ----- %6d\t|\t(T=%6d)\n", next_rise, y_nonzero(curr_samp), T_init)
         
         if (T_init > assumed_mintime)
-            T(end+1) = T_init;
+            T(end+1,:) = [next_rise-y_nonzero(prev_samp) T_init];
         end
-
+        
         next_rise = y_nonzero(curr_samp+1);
+        prev_samp = curr_samp;
         curr_samp = next_pulse(y_nonzero, curr_samp);
     end
 
-    % T is a vector of the "on" periods in the signal
+    % T is a vector of the off and on periods in the signal
     % 
-    [T_hist_vals,T_hist_edges] = histcounts(T,10);
+    [T_hist_vals,T_hist_edges] = histcounts(T(:,2),10);
     
     max_bins_count = maxk(T_hist_vals, 2);
     max_bin_idx = [find(T_hist_vals == max_bins_count(1)) find(T_hist_vals == max_bins_count(2))];
